@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import re
 import shutil
 import subprocess
@@ -41,7 +42,7 @@ def max_clip_seconds(config: dict[str, Any]) -> float:
 
 
 def video_duration(path: Path) -> float:
-    ffprobe = shutil.which("ffprobe")
+    ffprobe = os.environ.get("FFPROBE_BIN") or shutil.which("ffprobe")
     if not ffprobe:
         raise ValueError("需要 ffprobe 读取源视频时长")
     if not path.is_file():

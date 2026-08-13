@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import re
 import shutil
 import subprocess
@@ -20,6 +21,8 @@ def run(command: list[str], *, capture: bool = False) -> subprocess.CompletedPro
         command,
         check=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         stdout=subprocess.PIPE if capture else subprocess.DEVNULL,
         stderr=subprocess.PIPE if capture else subprocess.DEVNULL,
     )
@@ -67,8 +70,8 @@ def main() -> int:
     parser.add_argument("--scene-threshold", type=float, default=0.28)
     args = parser.parse_args()
 
-    ffmpeg = shutil.which("ffmpeg")
-    ffprobe = shutil.which("ffprobe")
+    ffmpeg = os.environ.get("FFMPEG_BIN") or shutil.which("ffmpeg")
+    ffprobe = os.environ.get("FFPROBE_BIN") or shutil.which("ffprobe")
     if not ffmpeg or not ffprobe:
         raise SystemExit("需要 ffmpeg 和 ffprobe")
     source = Path(args.input).expanduser().resolve()
@@ -109,6 +112,8 @@ def main() -> int:
             str(scene_dir / "scene_%04d.jpg"),
         ],
         text=True,
+        encoding="utf-8",
+        errors="replace",
         stdout=subprocess.DEVNULL,
         stderr=subprocess.PIPE,
         check=True,
