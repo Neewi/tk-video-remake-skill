@@ -1,0 +1,30 @@
+.DS_Store
+**/.DS_Store
+
+# Local task inputs and generated deliveries
+workspace/runs/
+workspace/inputs/
+workspace/00-input/
+workspace/01-analysis/
+workspace/02-storyboard/
+workspace/03-symphony/
+
+# Video and audio working files
+workspace/**/*.mp4
+workspace/**/*.mov
+workspace/**/*.mkv
+workspace/**/*.webm
+workspace/**/*.mp3
+workspace/**/*.wav
+workspace/**/*.m4a
+
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.tools/
+
+# Local model and tool caches
+.cache/
+models/

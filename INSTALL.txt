@@ -1,0 +1,14 @@
+TikTok Video Remake 开箱即用整合包
+
+1. 将 skill/tiktok-video-remake 整个文件夹复制到 Codex 的 skills 目录：
+   ~/.codex/skills/tiktok-video-remake
+
+2. 在 Codex 中打开本包的 workspace 文件夹，并在该目录下提交待复刻视频。
+   workspace.yaml 会被自动发现，无需重新配置产品信息。
+
+3. 已包含的默认商品：T10P。
+   商品事实和参考图片位于 workspace/product-library/T10P。
+
+4. 本包不包含本机虚拟环境或模型缓存。运行环境需要 Python 3、PyYAML、Pillow、FFmpeg 和 FFprobe。
+
+5. 后续新增商品时，在 workspace/product-library 中增加 SKU 目录，并更新 catalog.yaml。

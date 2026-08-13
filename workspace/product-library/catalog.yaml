@@ -1,0 +1,4 @@
+default_sku: "T10P"
+products:
+  - sku: T10P
+    path: ./T10P

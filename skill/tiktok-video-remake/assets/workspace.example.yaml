@@ -1,0 +1,9 @@
+product_library: ./product-library
+output_root: ./runs
+generation:
+  platform: Symphony Creative Studio
+  max_clip_seconds: 15
+  aspect_ratio: "9:16"
+  width: 1080
+  height: 1920
+  fps: 30

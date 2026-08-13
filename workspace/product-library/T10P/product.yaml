@@ -1,0 +1,53 @@
+sku: T10P
+product_name: T10P Tablet Bundle
+aliases:
+  - T10P
+  - T10P套装
+colors:
+  - black-and-dark-gray
+bundle_includes:
+  - tablet
+  - keyboard
+  - mouse
+  - stylus
+  - protective_case
+  - charging_cable
+facts:
+  - 平板正面为黑色边框，背壳为深灰色
+  - 平板正面和背面均为顶部居中的单摄像头
+  - 平板背面下方左右各有一组扬声器开孔
+  - 套装实拍图中可见黑色键盘、黑色鼠标、银灰色触控笔、保护壳和一根黑色线材
+  - 产品主体图、配件图和套装实拍图共同定义外观与套装关系
+allowed_claims:
+  - T10P套装包含平板、键盘、鼠标、触控笔、保护壳和线材，以当前实拍图所示组合为准
+  - 可展示平板与套装键盘、鼠标、触控笔和保护壳组合使用的场景
+forbidden_claims:
+  - 未经确认的处理器、内存、存储、屏幕尺寸、分辨率和续航声称
+  - 未经确认的操作系统、软件或外设兼容性声称
+  - 未经确认的防水、防摔、游戏性能和专业生产力声称
+  - 未经确认的价格、折扣、库存、赠品活动和到期时间
+  - 将包装盒上的图片、颜色选项或文字当作当前实物配置事实
+target_markets:
+  - US
+reference_priority:
+  - images/tablet/perspective.jpg
+  - images/tablet/front.jpg
+  - images/tablet/back.jpg
+  - images/bundle/hero.png
+  - images/bundle/flat-lay.png
+reference_notes:
+  tablet_identity:
+    - images/tablet/perspective.jpg
+    - images/tablet/front.jpg
+    - images/tablet/back.jpg
+  bundle_relationship:
+    - images/bundle/hero.png
+    - images/bundle/flat-lay.png
+  packaging_only:
+    - images/bundle/package.jpg
+    - images/bundle/package2.jpg
+  cautions:
+    - 包装图只用于展示包装，不用于判断平板颜色、配件数量或套装内容
+    - 鼠标单品图包含多个视角，生成单只鼠标时以套装实拍图中的外观和数量为准
+    - 键盘键帽上的系统文字不得作为兼容性证明
+    - 未提供独立屏幕内容参考图时，默认使用黑屏或中性无文字界面

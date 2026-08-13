@@ -1,0 +1,4 @@
+interface:
+  display_name: "TikTok 商品视频复刻"
+  short_description: "审核 BASE、M2/M3 变体，生成宫格和视觉自足提示词"
+  default_prompt: "使用 $tiktok-video-remake 解析并复刻我上传的带货视频；生成 BASE、3 个 M2 和 2 个 M3，我选择一个分支后，再生成四张宫格和一条可搭配宫格或产品图使用的视觉自足 Symphony 提示词。"
