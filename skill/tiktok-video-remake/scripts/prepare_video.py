@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -33,6 +34,44 @@ def remove_generated(folder: Path, pattern: str) -> None:
     for path in folder.glob(pattern):
         if path.is_file():
             path.unlink()
+
+
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def validate_run_binding(run_dir: Path, source: Path, output: Path) -> tuple[dict[str, Any], str]:
+    record_path = run_dir / "run.json"
+    if not record_path.is_file():
+        raise SystemExit(f"run 记录不存在：{record_path}")
+    try:
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"无法读取 run 记录：{record_path}：{exc}") from exc
+
+    source_video = record.get("source_video")
+    if not isinstance(source_video, dict):
+        raise SystemExit(f"run 未绑定源视频，请重新创建任务：{run_dir}")
+    input_path = source_video.get("input_path")
+    expected_hash = source_video.get("sha256")
+    if not isinstance(input_path, str) or not isinstance(expected_hash, str):
+        raise SystemExit(f"run 的源视频记录不完整，请重新创建任务：{run_dir}")
+
+    expected_source = (run_dir / input_path).resolve()
+    if source != expected_source:
+        raise SystemExit(f"源视频不属于当前 run：应使用 {expected_source}，实际收到 {source}")
+    expected_output = (run_dir / "01-analysis" / "prepared").resolve()
+    if output != expected_output:
+        raise SystemExit(f"分析目录不属于当前 run：应使用 {expected_output}，实际收到 {output}")
+
+    actual_hash = file_sha256(source)
+    if actual_hash != expected_hash:
+        raise SystemExit(f"当前 run 的源视频已被修改，请重新创建任务：{source}")
+    return record, actual_hash
 
 
 def stream_value(probe: dict[str, Any], codec_type: str, key: str, default: Any = None) -> Any:
@@ -66,6 +105,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("input")
     parser.add_argument("output")
+    parser.add_argument("--run-dir", type=Path, required=True)
     parser.add_argument("--sample-fps", type=float, default=2.0)
     parser.add_argument("--scene-threshold", type=float, default=0.28)
     args = parser.parse_args()
@@ -78,11 +118,20 @@ def main() -> int:
     if not source.is_file():
         raise SystemExit(f"输入视频不存在：{source}")
     output = Path(args.output).expanduser().resolve()
+    run_dir = args.run_dir.expanduser().resolve()
+    record, source_hash = validate_run_binding(run_dir, source, output)
     output.mkdir(parents=True, exist_ok=True)
     dense_dir = output / "frames-dense"
     scene_dir = output / "frames-scenes"
     remove_generated(dense_dir, "frame_*.jpg")
     remove_generated(scene_dir, "scene_*.jpg")
+    for stale_path in (
+        output / "audio-analysis.wav",
+        output / "contact-sheet.jpg",
+        output / "metadata.json",
+    ):
+        if stale_path.is_file():
+            stale_path.unlink()
 
     probe_result = run(
         [ffprobe, "-v", "error", "-show_format", "-show_streams", "-of", "json", str(source)],
@@ -134,6 +183,8 @@ def main() -> int:
     make_contact_sheet(dense_frames, output / "contact-sheet.jpg")
     evidence = {
         "source": str(source),
+        "source_sha256": source_hash,
+        "run_id": record.get("run_id"),
         "duration_seconds": round(duration, 3),
         "width": stream_value(probe, "video", "width"),
         "height": stream_value(probe, "video", "height"),

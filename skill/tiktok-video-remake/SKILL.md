@@ -65,10 +65,10 @@ description: 解析并复刻 TikTok、短视频或带货视频。默认以忠实
 1. 确认源视频可读，逐字记录用户本轮要求。
 2. 确定模式和 SKU。默认读取 `catalog.yaml.default_sku`；运行 `scripts/validate_product_library.py`。
 3. 完整读取 `references/product-library.md`，列出实际使用的产品事实、身份图、配件图、包装图和缺失角度。
-4. 用 `scripts/create_run.py` 建立任务目录；目标商品模式使用 SKU，源商品模式使用 `SOURCE`。
-5. 复制源视频到 `00-input/`，不得移动或覆盖原文件。
-6. 运行 `scripts/validate_generation_duration.py --video <源视频>`，确认源视频时长不超过 `generation.max_clip_seconds`；校验失败时停止并请用户提供不超限的源片，不得静默裁切或加速。
-7. 运行 `scripts/prepare_video.py`，生成元数据、候选切点、密集帧、场景帧、联系表和分析音轨。
+4. 用 `scripts/create_run.py --source <本轮上传视频>` 建立任务目录；目标商品模式使用 SKU，源商品模式使用 `SOURCE`。该命令会把本轮源视频复制为 `00-input/source.<ext>`，并在 `run.json` 中记录文件哈希；不得手动复用其他 run。
+5. 只使用本次 run 的 `00-input/source.<ext>`。运行 `scripts/validate_generation_duration.py --video <run-dir>/00-input/source.<ext>`，确认源视频时长不超过 `generation.max_clip_seconds`；校验失败时停止并请用户提供不超限的源片，不得静默裁切或加速。
+6. 运行 `scripts/prepare_video.py <run-dir>/00-input/source.<ext> <run-dir>/01-analysis/prepared --run-dir <run-dir>`；脚本必须通过源视频路径与哈希绑定校验，再生成元数据、候选切点、密集帧、场景帧、联系表和分析音轨。绑定失败时停止，不得回退到工作区中的其他视频或旧 run。
+7. 开始解析前读取 `01-analysis/prepared/metadata.json`，确认 `run_id`、`source` 和 `source_sha256` 与本次 run 的 `run.json` 一致。
 8. 完整读取 `references/video-analysis.md`、`references/variant-scripts.md` 与 `references/generation-safety.md` 后开始阶段一。
 
 ## 阶段一：脚本解析与人工审核
