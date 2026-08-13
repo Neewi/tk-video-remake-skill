@@ -45,7 +45,7 @@ AMERICAN_SETTING_RE = re.compile(
     re.IGNORECASE,
 )
 DIRECT_CHILD_ROLE_RE = re.compile(
-    r"儿童|小孩|小朋友|婴儿|幼儿|未成年|男孩|女孩|(?<!青)少年|少女|"
+    r"儿童|小孩|小朋友|婴儿|幼儿|未成年|男孩|女孩|少年|少女|"
     r"\b(?:child|children|kid|kids|minor|minors|baby|babies|toddler|toddlers|boy|boys|girl|girls)\b",
     re.IGNORECASE,
 )
@@ -122,7 +122,7 @@ def validate(text: str) -> list[str]:
         errors.append(
             "提示词包含过于直接或含混的儿童角色标签："
             + ", ".join(direct_child_roles)
-            + "；请根据场景改用“青少年/高中生”"
+            + "；请统一改用“高中生”"
         )
 
     maturity_labels = sorted(set(MATURITY_PUSH_RE.findall(text)))
@@ -130,7 +130,7 @@ def validate(text: str) -> list[str]:
         errors.append(
             "提示词包含会把年轻人物推向成熟外观的 18+ 声明："
             + ", ".join(maturity_labels)
-            + "；请保留“青少年/高中生”的年轻形象"
+            + "；请保留“高中生”的年轻形象"
         )
 
     return errors
@@ -140,7 +140,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
             "Validate Symphony prompt self-contained visual anchors, workflow language, "
-            "timeline, American casting/setting, and youth-label rules."
+            "timeline, American casting/setting, and high-school-student label rules."
         )
     )
     parser.add_argument("prompt", type=Path)
