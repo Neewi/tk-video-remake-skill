@@ -14,13 +14,7 @@ from validate_generation_duration import EXECUTION_HEADINGS, top_level_section, 
 
 
 SCRIPT_ID_RE = re.compile(r"^(?:BASE|V\d{2,})$")
-CROP_DIRS = ("crops-a1", "crops-a2", "crops-b1", "crops-b2")
-GRID_FILES = (
-    "storyboard-grid-a1.png",
-    "storyboard-grid-a2.png",
-    "storyboard-grid-b1.png",
-    "storyboard-grid-b2.png",
-)
+GRID_FILES = ("storyboard-grid-b1.png",)
 
 
 def timestamp() -> str:
@@ -67,7 +61,7 @@ def main() -> int:
     if args.action == "start":
         storyboard = run_dir / "02-storyboard" / script_id
         symphony = run_dir / "03-symphony" / script_id
-        for folder in (storyboard, symphony, *(storyboard / name for name in CROP_DIRS)):
+        for folder in (storyboard, symphony):
             folder.mkdir(parents=True, exist_ok=True)
 
         changed = sorted(
