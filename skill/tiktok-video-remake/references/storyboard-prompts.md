@@ -1,6 +1,6 @@
 # 宫格分镜与 Symphony 单条提示词规范
 
-本规范每次只处理用户明确选择的一个 `BASE` 或 `Vxx` 有效执行稿。不得把其他分支的人物、场景或覆盖项混入本次输出。
+本规范每次只处理一个 `BASE` 或 `Vxx` 有效执行稿：审核增量模式由用户选择，六版直出模式由交付计划依次选择。不得把其他分支的人物、场景或覆盖项混入本次输出。
 
 ## 目录
 
@@ -230,4 +230,4 @@ python3 scripts/validate_symphony_prompt.py 03-symphony/<script-id>/symphony-pro
 - 若反馈仅涉及穿帮、颜色、结构、人物一致性、手部、构图或画面质感，不重写 `symphony-prompt.txt`。
 - 只有反馈改变镜头语义、时间码、台词、商品事实或格号映射时，才同步更新并重新校验 Symphony 提示词。
 
-本分支完成后，列出 `script-review.md` 中仍可选择的 BASE/Vxx，并提示用户可继续另一个分支。不得自动生成其他分支，也不得覆盖其他分支的目录。
+`REVIEW_INCREMENTAL` 在本分支完成后列出 `script-review.md` 中仍可选择的 BASE/Vxx，并提示用户可继续另一个分支，不自动生成其他分支。`DIRECT_BATCH` 按 `references/run-modes.md` 自动进入下一个未完成分支。两种模式都不得覆盖其他分支的目录。

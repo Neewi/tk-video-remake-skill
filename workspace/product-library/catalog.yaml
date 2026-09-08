@@ -2,3 +2,10 @@ default_sku: "T10P"
 products:
   - sku: T10P
     path: ./T10P
+    enabled: true
+  - sku: TB02
+    path: ./TB02
+    enabled: true
+  - sku: TAB10
+    path: ./TAB10
+    enabled: true

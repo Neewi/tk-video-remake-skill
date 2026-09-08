@@ -11,19 +11,20 @@ from typing import Any
 
 import yaml
 
-from workspace_config import WorkspaceConfigError, load_workspace_config, resolve_config_path
+from product_catalog import load_product_catalog, load_yaml, select_product
+from workspace_config import WorkspaceConfigError
 
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp"}
-REQUIRED_FIELDS = ("sku", "product_name", "bundle_includes", "allowed_claims", "forbidden_claims")
-
-
-def load_yaml(path: Path) -> dict[str, Any]:
-    with path.open("r", encoding="utf-8") as handle:
-        data = yaml.safe_load(handle)
-    if not isinstance(data, dict):
-        raise ValueError(f"{path} 的顶层必须是 YAML 对象")
-    return data
+REQUIRED_FIELDS = (
+    "sku",
+    "product_name",
+    "bundle_includes",
+    "facts",
+    "allowed_claims",
+    "forbidden_claims",
+    "reference_priority",
+)
 
 
 def list_images(folder: Path) -> list[str]:
@@ -48,24 +49,14 @@ def main() -> int:
     report: dict[str, Any] = {}
 
     try:
-        workspace_path, workspace = load_workspace_config(args.workspace)
-        library = resolve_config_path(
-            workspace_path, workspace.get("product_library"), "product_library"
-        )
-        catalog = load_yaml(library / "catalog.yaml")
+        _, catalog, entries = load_product_catalog(args.workspace)
+        selected, _ = select_product(entries, catalog, args.sku)
     except (OSError, KeyError, ValueError, WorkspaceConfigError, yaml.YAMLError) as exc:
         print(f"错误：{exc}")
         return 2
 
-    sku = args.sku or str(catalog.get("default_sku") or "").strip()
-    if not sku:
-        print("错误：未指定 SKU，且 catalog.yaml 没有 default_sku")
-        return 2
-
-    product_dir = library / sku
-    if not product_dir.is_dir() or sku.startswith(("_", ".")):
-        print(f"错误：SKU 目录不存在：{product_dir}")
-        return 2
+    sku = selected.sku
+    product_dir = selected.path
 
     product_file = product_dir / "product.yaml"
     try:

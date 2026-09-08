@@ -1,24 +1,33 @@
 ---
 name: tiktok-video-remake
-description: 解析并复刻 TikTok、短视频或带货视频。默认以忠实复刻为主，在不改变事实与核心广告机制的前提下做最小转化强化，并把商品对象替换为产品资料库的指定 SKU 或 default_sku；阶段一交付可直接编辑的原视频脚本、独立 BASE 原样复刻脚本、3 个 M2 保钩子中变体和 2 个 M3 大变体，用户每次指定继续 BASE 或一个 Vxx；阶段二只为所选分支生成一张 B1 转化张力型 6/9/12 宫格和一段包含人物/环境文字锚点、可搭配宫格或仅配合产品图使用的视觉自足 Symphony 完整音视频提示词。Use when the user asks to 复刻/还原/照着做 TikTok 或短视频、解析源视频脚本、换成自有产品、制作多强度变体脚本、宫格分镜或 Symphony 视频提示词。
+description: 解析并复刻 TikTok、短视频或带货视频，把商品替换为指定 SKU 或默认 SKU，并生成 BASE、3 个 M2 与 2 个 M3。默认先交付脚本审核稿，再按用户选择逐个生成分支；用户明确要求直接或一次性生成全部六版时，跳过审核停点并批量生成 BASE、V01–V05 各自的一张 B1 宫格和一条视觉自足的 Symphony 完整音视频提示词。Use when the user asks to 复刻/还原/照着做 TikTok 或短视频、换成自有产品、制作多强度变体、宫格分镜或 Symphony 视频提示词。
 ---
 
 # TikTok 视频复刻与 Symphony 交付
 
 ## 目标与边界
 
-只执行两个阶段：
+共享两个内容阶段，并提供两种运行模式：
 
-1. 完整解析源视频，提交一份低噪音、可直接编辑的“原视频脚本 + 独立 BASE 原样复刻脚本 + 3 个 M2 与 2 个 M3 变体覆盖层”，等待人工浏览、修改并选择一个分支。
-2. 只为本次选中的 BASE 或单个 Vxx 生成一张 B1 转化张力型分镜宫格和一段包含人物/环境文字锚点的视觉自足 Symphony 提示词；完成后允许用户继续选择其他分支。
+1. 完整解析源视频，生成一份低噪音、可直接编辑的“原视频脚本 + 独立 BASE 原样复刻脚本 + 3 个 M2 与 2 个 M3 变体覆盖层”。
+2. 为有效分支生成一张 B1 转化张力型分镜宫格和一段包含人物/环境文字锚点的视觉自足 Symphony 提示词。
+
+- `REVIEW_INCREMENTAL`：默认在阶段一后等待人工浏览、修改并选择 BASE 或单个 Vxx；阶段二每次只生成一个分支。
+- `DIRECT_BATCH`：用户明确要求直接、一次性或批量生成全部六版时，阶段一不设人工停点，按 BASE、V01–V05 顺序生成六张独立 B1 和六条独立提示词。
+
+完整读取 [`references/run-modes.md`](references/run-modes.md) 确定模式、状态和续跑行为。
 
 不要继续生成 Symphony 视频、质检回传片段、剪辑、配音、合成字幕或输出最终成片。
 
 ## 默认模式
 
+这里的模式指商品替换模式，与运行模式相互独立。
+
 - 默认使用 `TARGET_PRODUCT_REMAKE`：保留源片的人物可见外观、造型、场景、构图、动作、运镜、节奏和广告机制，把源片所有商品相关对象替换为目标 SKU。
 - 默认执行“忠实复刻 + 最小转化强化”：先保留源片已成立的钩子、广告机制和转化路径；只有在不改变事实、镜头语义和用户要求时，才强化前 3 秒商品可见性、动作起点、口播清晰度和视听节奏。
-- 用户指定 SKU 时使用该 SKU；用户未指定时读取 `catalog.yaml.default_sku`。
+- 用户指定 SKU、产品名或别名时，将其解析为标准 SKU；用户未指定时读取 `catalog.yaml.default_sku`。
+- 用户要求查看或选择商品时，先运行 `scripts/select_product.py --list`，展示启用的 SKU、产品名和别名后等待选择。不得在未收到选择时创建 run。
+- 每个 run 只绑定一个标准 SKU。不得混用其他 SKU 的产品事实、图片、配件、包装或声称。
 - 只有用户明确说“保留源片商品”或“完全忠实原产品”时，才使用 `SOURCE_FAITHFUL`，任务标识为 `SOURCE`。
 - 商品相关对象包括平板、配件、保护套、触控笔、键鼠、线材、屏幕、包装盒、产品 Logo、产品颜色和套装关系。
 - 只替换源片中实际出现或经人工批准新增的商品对象。产品资料库中存在但源片未出现的配件，不得自动加入画面。
@@ -62,22 +71,27 @@ description: 解析并复刻 TikTok、短视频或带货视频。默认以忠实
 
 ## 开始任务
 
-1. 确认源视频可读，逐字记录用户本轮要求。
-2. 确定模式和 SKU。默认读取 `catalog.yaml.default_sku`；运行 `scripts/validate_product_library.py`。
+1. 确认源视频可读，逐字记录用户本轮要求，并按 `references/run-modes.md` 确定运行模式。普通复刻请求使用 `REVIEW_INCREMENTAL`；只有明确要求直接生成全部六版时使用 `DIRECT_BATCH`。不因为用户说“直接生成一个版本”而扩大成六版。
+2. 确定模式和 SKU：
+   - 用户给出 SKU、产品名或别名时，运行 `scripts/select_product.py --sku <用户原文>`。
+   - 用户要求查看或选择商品但未给出名称时，运行 `scripts/select_product.py --list`，用紧凑列表展示结果并等待用户选择。
+   - 用户没有提出选择要求且没有指定商品时，运行 `scripts/select_product.py` 读取 `catalog.yaml.default_sku`。
+   - 找不到或匹配到多个商品时，只展示脚本返回的候选并询问，不得模糊匹配或自行决定。
+   - 后续一律使用脚本返回的标准 `sku`；运行 `scripts/validate_product_library.py --sku <标准 SKU>`。
 3. 完整读取 `references/product-library.md`，列出实际使用的产品事实、身份图、配件图、包装图和缺失角度。
-4. 用 `scripts/create_run.py --source <本轮上传视频>` 建立任务目录；目标商品模式使用 SKU，源商品模式使用 `SOURCE`。该命令会把本轮源视频复制为 `00-input/source.<ext>`，并在 `run.json` 中记录文件哈希；不得手动复用其他 run。
-5. 只使用本次 run 的 `00-input/source.<ext>`。运行 `scripts/validate_generation_duration.py --video <run-dir>/00-input/source.<ext>`，确认源视频时长不超过 `generation.max_clip_seconds`；校验失败时停止并请用户提供不超限的源片，不得静默裁切或加速。
-6. 运行 `scripts/prepare_video.py <run-dir>/00-input/source.<ext> <run-dir>/01-analysis/prepared --run-dir <run-dir>`；脚本必须通过源视频路径与哈希绑定校验，再生成元数据、候选切点、密集帧、场景帧、联系表和分析音轨。绑定失败时停止，不得回退到工作区中的其他视频或旧 run。
+4. 用 `scripts/create_run.py --source <本轮上传视频> --sku <标准 SKU> --mode <review-or-batch>` 建立任务目录；`REVIEW_INCREMENTAL` 传 `review`，`DIRECT_BATCH` 传 `batch`，源商品模式使用 `--sku SOURCE`。该命令也支持产品名和别名，但 run 中只记录解析后的标准 SKU；它会把本轮源视频复制为 `00-input/source.<ext>`，并在 `run.json` 中记录文件哈希、运行模式和交付计划；不得手动复用其他 run。
+5. 运行 `scripts/normalize_source_duration.py <run-dir>`。源视频不超过 `generation.max_clip_seconds` 时保持原样；超过时默认自动截取从 0 秒开始的前 `generation.max_clip_seconds` 秒，更新 `run.json` 中的输入路径、哈希、时长与裁剪记录并直接继续，不提示用户、不等待确认，不做加速，也不分析被截掉的内容。
+6. 只使用 `run.json.source_video.input_path` 当前绑定的 `00-input/source.<ext>`。运行 `scripts/prepare_video.py <绑定源视频> <run-dir>/01-analysis/prepared --run-dir <run-dir>`；脚本必须通过源视频路径与哈希绑定校验，再生成元数据、候选切点、密集帧、场景帧、联系表和分析音轨。绑定失败时停止，不得回退到工作区中的其他视频或旧 run。
 7. 开始解析前读取 `01-analysis/prepared/metadata.json`，确认 `run_id`、`source` 和 `source_sha256` 与本次 run 的 `run.json` 一致。
 8. 完整读取 `references/video-analysis.md`、`references/variant-scripts.md` 与 `references/generation-safety.md` 后开始阶段一。
 
-## 阶段一：脚本解析与人工审核
+## 阶段一：脚本解析与执行记录
 
 只输出一个主要审核文件：`01-analysis/script-review.md`。
 
-阶段一的目标是让人类直接看脚本和改脚本，不是阅读分析报告。完整读取 `references/video-analysis.md`、`references/variant-scripts.md` 与 `references/generation-safety.md`，并严格遵守以下人类界面契约：
+阶段一的目标是形成可编辑、可追溯的执行稿，不是分析报告。完整读取 `references/video-analysis.md`、`references/variant-scripts.md` 与 `references/generation-safety.md`，并严格遵守以下文件契约：
 
-1. 文件开头用三行以内说明：直接修改“复刻执行脚本”或任意变体；每次只执行一个脚本；修改后回复“继续原样脚本”或“继续 V01/V02…”。
+1. `REVIEW_INCREMENTAL` 的文件开头用三行以内说明：直接修改“复刻执行脚本”或任意变体；每次只执行一个脚本；修改后回复“继续原样脚本”或“继续 V01/V02…”。`DIRECT_BATCH` 改为简短说明该文件是六版直出的执行记录，系统将按 BASE、V01–V05 自动继续；不要写等待选择的提示。
 2. 第一部分是“原视频脚本（只读参考）”。按真实镜头顺序直接写画面、动作/运镜、逐字原口播、字幕/OCR、音频和结束状态。不要先放摘要、证据表、切镜表或分析方法。
 3. 第二部分是“复刻执行脚本（原样复刻，独立可执行）”，标识为 `BASE`。它是完整脚本，不依赖变体母版；按相同镜头顺序写目标画面、口播、音频和切镜/结束状态，并执行“忠实复刻 + 最小转化强化”。
 4. 第三部分是“变体母版”和默认 5 个 `V01–V05` 覆盖层：`V01–V03` 为 M2 保钩子中变体，`V04–V05` 为 M3 大变体；用户本轮明确指定其他数量或配比时服从用户。每个变体写清差异等级、保护项、变化轴、逐镜覆盖、必要适配和保持不变，不机械复制完整 BASE。
@@ -86,9 +100,11 @@ description: 解析并复刻 TikTok、短视频或带货视频。默认以忠实
 7. 解析证据、元数据、转录文件和联系表保留在 `01-analysis/prepared/`，不要把它们大段复制到人类审核文件。
 8. 若有无法通过安全默认值解决的阻塞冲突，在文件最上方列一个简短“继续前必须确认”区；没有阻塞项就完全省略该区。
 
-把 `script-review.md` 交给用户后停止，不生成分镜。用户可以直接编辑文件，也可以不修改。
+`REVIEW_INCREMENTAL`：把 `script-review.md` 交给用户后停止，不生成分镜。用户可以直接编辑文件，也可以不修改。
 
-当用户要求继续某个脚本时：
+`DIRECT_BATCH`：保存 `script-review.md`，但不把它作为人工审核停点；没有真正阻塞项时立即进入“六版直出”。不得把自动继续描述为人工批准。存在无法安全确定的产品事实时仍停止，只显示一个最短阻塞问题。
+
+在 `REVIEW_INCREMENTAL` 中，当用户要求继续某个脚本时：
 
 1. 必须重新从磁盘读取 `script-review.md`，不得依赖先前对话中的脚本副本。
 2. 按 `references/variant-scripts.md` 将用户口令归一化为 `BASE` 或一个 `Vxx`。存在变体时，用户只说“继续”则询问选择；没有变体时继续兼容为 BASE。每次只执行一个分支。
@@ -118,19 +134,34 @@ description: 解析并复刻 TikTok、短视频或带货视频。默认以忠实
 
 展示本分支唯一的 B1 宫格，并提供其 `symphony-prompt.txt`；说明 B1 是转化张力型宫格，可用于加强构图稳定性，不使用宫格时提示词也可配合产品图独立使用。运行 `scripts/manage_delivery_branch.py complete <run-dir> <script-review.md> <BASE-or-Vxx>`，在确认 B1 和提示词存在后标记本分支完成。然后列出审核文件中仍可继续的 BASE/Vxx，并提示用户可以回复“继续原样脚本”或“继续 Vxx”增量生成另一分支。本次分支到此结束，不自动生成其他分支。
 
+上段的“本次分支到此结束”只适用于 `REVIEW_INCREMENTAL`。
+
+## 六版直出
+
+仅在 `run.json.run_mode` 为 `DIRECT_BATCH` 时执行。完整读取 `references/run-modes.md`，并使用与单分支阶段二完全相同的 B1 与 Symphony 质量标准。
+
+1. 按 `run.json.delivery_plan` 的固定顺序处理 BASE、V01–V05；跳过状态为 `complete` 的分支，从第一个未完成分支继续。
+2. 每个分支开始前重新读取磁盘中的 `script-review.md`，合成当前有效执行稿。不得混入其他 Vxx。
+3. 每个分支的目标时长必须不超过上限。若校验失败，在不改变商品事实、转化内核和差异等级的前提下内部压缩或改写当前分支，更新 `script-review.md` 后重新校验；不得要求用户手工压缩，不得加速口播。
+4. 对当前分支运行 `manage_delivery_branch.py start`，生成并校验其独立 B1 和独立提示词，再运行 `manage_delivery_branch.py complete`。
+5. 一个分支失败时运行 `manage_delivery_branch.py fail ... --reason <简短原因>`，保留已完成分支并停止本轮；不得越过失败项继续。后续收到“继续批量任务”或“重试六版直出”时，从第一个非 `complete` 分支继续。
+6. 六个分支全部完成后，`run.json.status` 必须为 `complete`。展示根目录的 `delivery-summary.md`、六张 B1 和六条提示词入口，不再要求用户逐个回复继续。
+
 ## 最终交付结构
 
 ```text
 runs/<run-id>/
+├── delivery-summary.md        # 仅 DIRECT_BATCH
 ├── 00-input/
 ├── 01-analysis/
 │   ├── prepared/
 │   └── script-review.md
 ├── 02-storyboard/
-│   ├── BASE/
-│   │   └── storyboard-grid-b1.png
-│   └── V01/ ...
+│   ├── BASE/storyboard-grid-b1.png
+│   ├── V01/storyboard-grid-b1.png
+│   └── V02–V05/ ...
 └── 03-symphony/
     ├── BASE/symphony-prompt.txt
-    └── V01/symphony-prompt.txt
+    ├── V01/symphony-prompt.txt
+    └── V02–V05/ ...
 ```

@@ -1,0 +1,28 @@
+sku: REPLACE_ME
+product_name: Replace Me Product Name
+aliases:
+  - Replace Me Alias
+colors:
+  - replace-me
+bundle_includes:
+  - tablet
+facts:
+  - 只填写由产品资料或用户确认的稳定事实
+allowed_claims:
+  - 只填写允许进入脚本的已证实声称
+forbidden_claims:
+  - 未经确认的参数、功能、兼容性、价格、折扣、库存和活动
+target_markets:
+  - US
+reference_priority:
+  - images/tablet/front.jpg
+  - images/tablet/back.jpg
+  - images/tablet/perspective.jpg
+reference_notes:
+  tablet_identity:
+    - images/tablet/front.jpg
+    - images/tablet/back.jpg
+    - images/tablet/perspective.jpg
+  bundle_relationship: []
+  packaging_only: []
+  cautions: []

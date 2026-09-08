@@ -1,0 +1,55 @@
+sku: TB02
+product_name: TB02 Tablet Bundle
+aliases:
+  - TB02
+  - TB02套装
+  - TB02平板
+colors:
+  - black
+bundle_includes:
+  - tablet
+  - keyboard
+  - mouse
+  - stylus
+  - protective_case
+  - charging_cable
+facts:
+  - 平板正面为黑色边框，横向长边中央有一枚前置摄像头
+  - 平板背壳为黑色细纹理表面，后置单摄与闪光灯位于长边附近的居中矩形模组内
+  - 套装素材中可见黑色键盘、黑色鼠标、银灰色触控笔、黑色保护壳和黑色充电线
+  - 平板主体外观只由本目录 images/tablet 中的 TB02 专属图片定义
+allowed_claims:
+  - TB02套装包含平板、键盘、鼠标、触控笔、保护壳和充电线，以当前实拍图所示组合为准
+  - 可展示平板与套装键盘、鼠标、触控笔和保护壳组合使用的场景
+forbidden_claims:
+  - 未经确认的处理器、内存、存储、屏幕尺寸、分辨率和续航声称
+  - 未经确认的操作系统、软件或外设兼容性声称
+  - 未经确认的防水、防摔、游戏性能和专业生产力声称
+  - 未经确认的价格、折扣、库存、赠品活动和到期时间
+  - 将包装盒上的图片、颜色选项或文字当作当前实物配置事实
+target_markets:
+  - US
+reference_priority:
+  - images/tablet/perspective.png
+  - images/tablet/front.png
+  - images/tablet/back.png
+  - images/bundle/hero.jpg
+  - images/bundle/flat-lay.jpg
+reference_notes:
+  tablet_identity:
+    - images/tablet/perspective.png
+    - images/tablet/front.png
+    - images/tablet/back.png
+    - images/tablet/ports.png
+    - images/tablet/left-side.png
+    - images/tablet/right-side.png
+  bundle_relationship:
+    - images/bundle/hero.jpg
+    - images/bundle/flat-lay.jpg
+  packaging_only:
+    - images/bundle/package.jpg
+    - images/bundle/package2.jpg
+  cautions:
+    - 套装、配件、包装和屏幕素材可能与其他 SKU 共用；它们不得覆盖本 SKU 的平板主体身份图
+    - 包装图只用于展示包装，不用于判断平板颜色、参数、配件数量或套装内容
+    - 键盘键帽或屏幕画面中的文字不得作为系统、软件或兼容性证明

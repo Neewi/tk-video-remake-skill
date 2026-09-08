@@ -7,7 +7,10 @@
 ```text
 product-library/
 ├── catalog.yaml
-└── <sku>/
+├── <sku-a>/
+│   ├── product.yaml
+│   └── images/ ...
+└── <sku-b>/
     ├── product.yaml
     └── images/
         ├── tablet/
@@ -21,9 +24,40 @@ product-library/
 ## 2. 默认选择规则
 
 - “复刻视频”默认表示使用自有商品复刻，读取 `catalog.yaml.default_sku`。
-- 用户指定 SKU 时覆盖默认值。
+- 用户指定 SKU、产品名或别名时覆盖默认值；运行 `scripts/select_product.py --sku <用户原文>` 解析为标准 SKU。
+- 用户要求查看或选择商品时，运行 `scripts/select_product.py --list`。只展示 `enabled` 不为 `false` 的商品。
+- 未指定商品且没有提出选择要求时，运行 `scripts/select_product.py` 使用默认 SKU。
+- 找不到或匹配到多个商品时停下询问，不做包含匹配、相似拼写推断或随机选择。
 - 只有用户明确要求保留源片商品时，才不读取默认 SKU，并使用 `SOURCE_FAITHFUL`。
-- 确定 SKU 后运行 `scripts/validate_product_library.py`；验证失败时停下，不生成分镜。
+- 确定标准 SKU 后运行 `scripts/validate_product_library.py --sku <标准 SKU>`；验证失败时停下，不生成分镜。
+- 一个 run 只允许绑定一个标准 SKU；只读取该 SKU 目录的 `product.yaml` 和图片，不得从其他 SKU 补图或补事实。
+
+`catalog.yaml` 是可选商品索引：
+
+```yaml
+default_sku: T10P
+products:
+  - sku: T10P
+    path: ./T10P
+    enabled: true
+  - sku: TB02
+    path: ./TB02
+    enabled: true
+  - sku: TAB10
+    path: ./TAB10
+    enabled: true
+```
+
+每个 `sku` 必须唯一。`path` 相对于产品资料库根目录，且必须留在该目录内。把暂不允许用户选择的商品设为 `enabled: false`。产品名和别名放在对应 SKU 的 `product.yaml` 中：
+
+```yaml
+sku: TB02
+product_name: TB02 Tablet Bundle
+aliases:
+  - TB02
+  - TB02套装
+  - TB02平板
+```
 
 ## 3. 产品事实
 
@@ -36,6 +70,8 @@ product-library/
 - `allowed_claims`
 - `forbidden_claims`
 - `reference_priority`
+
+建议同时填写 `aliases`，让用户可用自然称呼选择该 SKU。新增 SKU 时以 [`assets/product.example.yaml`](../assets/product.example.yaml) 为字段模板，并建立 `images/tablet`、`images/accessories`、`images/bundle` 与 `images/screen`；不得复制其他 SKU 的事实充当占位内容。
 
 价格、折扣、库存和活动日期易变化。只有有效 `offer` 或用户本轮明确确认时才可进入目标脚本。
 
@@ -75,8 +111,9 @@ product-library/
 - 把平板、配件、保护套和包装身份直接写成自足的文字约束；人物、环境、动作和摄影机也必须由文字锚点与完整时间线自足定义。
 - 宫格编号只可作为时间段的附加定位，删除编号后画面描述仍必须完整可执行。
 
-## 7. T10P 特别注意
+## 7. 仅选中 T10P 时的特别注意
 
+- 本节只在标准 SKU 为 `T10P` 时适用；其他 SKU 必须完全忽略本节。
 - 平板实物为黑色/深灰色，前后顶部居中单摄像头，背面下方左右各一组扬声器孔。
 - 触控笔为银灰色，保护套为黑色。
 - 包装图只用于包装外观；即使包装侧面勾选 `Pink`，也不得把 T10P 实物改成粉色。
